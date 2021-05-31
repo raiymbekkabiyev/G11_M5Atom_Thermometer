@@ -1,0 +1,19 @@
+#include "M5Atom.h"
+#define INTERVAL = 5000; //Interval to record temperature (milliseconds)
+
+void setup() {
+  M5.begin(true, false, true);
+}
+
+unsigned long targetTime (0);
+
+void loop() {
+
+  if ( millis() > targetTime)
+  {
+    //record temp
+    targetTime += INTERVAL;
+  }
+
+  M5.update();
+}
