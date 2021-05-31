@@ -66,7 +66,7 @@ void setup() {
 void loop() {
   M5.IMU.getAccelData(&aX, &aY, &aZ);  //Gets acceleration data from the device
 
-  //We use Mike Klepper's tilt threshold idea to help differentiate when the device is oriented in different directions
+  //We use Mike Klepper's tilt threshold idea to help differentiate when the device is oriented in different directions (https://patriot-geek.blogspot.com/2020/05/atom-matrix-using-mpu6886-accelerometer.html)
   if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ > tiltThreshold)
     drawArray(circle, palette);
   else if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ < -tiltThreshold)
