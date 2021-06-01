@@ -33,6 +33,7 @@ void loop() {
       mCtr++;
 
       if (mCtr > 59) {
+        tempSum = 0;
         for (int ctr = 0; ctr < 60; ctr++) {
           tempSum += every1m(mCtr - ctr);
         }
@@ -40,23 +41,32 @@ void loop() {
         hCtr++;
 
         if (hCtr > 59) {
-        for (int ctr = 0; ctr < 60; ctr++) {
-          tempSum += every1h(hCtr - ctr);
+          for (int ctr = 0; ctr < 60; ctr++) {
+            tempSum += every1h(hCtr - ctr);
+          }
+
+
+          if (dCtr < 24) {
+            every1d(dCtr) = tempSum;
+            dCtr++;
+          }
+          else {
+            for (int ctr = 0; ctr < 59; ctr++) {
+              every1d(ctr + 1) = every1d(ctr);
+            }
+            every1d(0) = tempSum
+          }
+
         }
-        every1d(dCtr) = tempSum;
-        dCtr++;
+
       }
 
+      if (sCtr > 59)
+        sCtr = 0;
+
+
+      targetTime += INTERVAL;
     }
 
-    if (sCtr > 59)
-      sCtr = 0;
-
-    //record temp
-
-
-    targetTime += INTERVAL;
+    M5.update();
   }
-
-  M5.update();
-}
