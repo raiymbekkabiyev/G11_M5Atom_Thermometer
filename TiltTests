@@ -5,6 +5,7 @@ int palette[] = {black, white, orange};  //Select color palette by putting in or
 
 //Function that takes a 25 element matrix of image data and prints it on the display (credit: Mike Klepper)
 void drawArray(int shapeMatrix[], int colors[]) {
+  M5.dis.clear();
   for (int i = 0; i < 25; i++) {
     if (colors[shapeMatrix[i]] != black)
       M5.dis.drawpix(i, colors[shapeMatrix[i]]);
@@ -41,46 +42,242 @@ int rightArrow[25] = { 0, 0, 1, 0, 0,
                      };
 
 int circle[25] = { 0, 1, 1, 1, 0,
-                       1, 0, 0, 0, 1,
-                       1, 0, 0, 0, 1,
-                       1, 0, 0, 0, 1,
-                       0, 1, 1, 1, 0
-                     };
+                   1, 0, 0, 0, 1,
+                   1, 0, 0, 0, 1,
+                   1, 0, 0, 0, 1,
+                   0, 1, 1, 1, 0
+                 };
 
-int circleWithX[25] = { 0, 1, 1, 1, 0,
-                        1, 0, 2, 0, 1,
-                        1, 2, 2, 2, 1,
-                        1, 0, 2, 0, 1,
-                        0, 1, 1, 1, 0
-                      };
+int X[25] = { 2, 0, 0, 0, 2,
+              0, 2, 0, 2, 0,
+              0, 0, 2, 0, 0,
+              0, 2, 0, 2, 0,
+              2, 0, 0, 0, 2
+            };
+
+int zero[25] = { 2, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+               };
+
+int one[25] = { 1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+              };
+
+int two[25] = { 1, 1, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+              };
+
+int three[25] = { 1, 1, 1, 0, 0,
+                  0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                };
+
+int four[25] = { 1, 1, 1, 1, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+               };
+
+int five[25] = { 1, 1, 1, 1, 1,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+               };
+
+int six[25] = { 1, 1, 1, 1, 1,
+                1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+              };
+
+int seven[25] = { 1, 1, 1, 1, 1,
+                  1, 1, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                };
+
+int eight[25] = { 1, 1, 1, 1, 1,
+                  1, 1, 1, 0, 0,
+                  0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0,
+                };
+
+int nine[25] = { 1, 1, 1, 1, 1,
+                 1, 1, 1, 1, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+               };
+
+int ten[25] = { 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+              };
 
 
-float tiltThreshold = .5;  //We tested to find this value which defines the angles at which the device must be tilted at to be considered as facing certain directions
+float tiltThreshold (.5);  //We tested to find this value which defines the angles at which the device must be tilted at to be considered as facing certain directions
 float aX, aY, aZ;
+int tiltState (0);  //0=error, 1=down, 2=up, 3=facing you, 4=facing away from you, 5=right, 6=left
+int units (0);  //units of temperature displayed; 0=C, 1=F
+int menuMode (0);  //0=off, 1=show temp and units, 2=show 24hr avg and units, 3=show color scale and current temp color, 4=show temp graph over predefined range, 5=change units
+bool isActive(false), was5, wasWas5, was6, wasWas6;
 
 void setup() {
+  Serial.begin(115200);
   M5.begin(true, false, true);
   M5.IMU.Init();  //Starts up the hardware in the device which detects acceleration, gyration, and temperature
+  M5.dis.clear();
 }
 
 void loop() {
   M5.IMU.getAccelData(&aX, &aY, &aZ);  //Gets acceleration data from the device
 
-  //We use Mike Klepper's tilt threshold idea to help differentiate when the device is oriented in different directions (https://patriot-geek.blogspot.com/2020/05/atom-matrix-using-mpu6886-accelerometer.html)
   if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ > tiltThreshold)
-    drawArray(circle, palette);
+    tiltState = 1;
   else if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ < -tiltThreshold)
-    drawArray(circleWithX, palette);
+    tiltState = 2;
   else if (abs(aX) < tiltThreshold && aY > tiltThreshold && abs(aZ) < tiltThreshold)
-    drawArray(upArrow, palette);
+    tiltState = 3;
   else if (abs(aX) < tiltThreshold && aY < -tiltThreshold && abs(aZ) < tiltThreshold)
-    drawArray(downArrow, palette);
+    tiltState = 4;
   else if (aX > tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold)
-    drawArray(leftArrow, palette);
+    tiltState = 5;
   else if (aX < -tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold)
-    drawArray(rightArrow, palette);
+    tiltState = 6;
   else
-    M5.dis.clear();  //If not clearly tilted to face the given directions the screen will be blank
+    tiltState = 0;
+  Serial.println(menuMode);
+
+
+  if (tiltState == 2 && M5.Btn.wasPressed()) {
+    isActive = true;
+    menuMode = 1;
+  }
+
+  if (tiltState == 1) {
+    isActive = false;
+    M5.dis.clear();
+    menuMode = 0;
+  }
+
+  if (isActive == true) {
+    M5.dis.fillpix(0xffffff);
+
+
+    if (tiltState == 0 && wasWas5)  {
+      menuMode++;
+      if (menuMode == 6)
+        menuMode = 1;
+    }
+
+    if (tiltState == 0 && wasWas6)  {
+      menuMode--;
+      if (menuMode == 0)
+        menuMode = 5;
+    }
+
+    if (tiltState == 5) {
+      if (was5 == true)
+        wasWas5 = true;
+      was5 = true;
+    }
+    else {
+      was5 = false;
+      wasWas5 = false;
+    }
+
+    if (tiltState == 6) {
+      if (was6 == true)
+        wasWas6 = true;
+      was6 = true;
+    }
+    else {
+      was6 = false;
+      wasWas6 = false;
+    }
+
+
+
+    switch (menuMode) {
+      case 0:
+        drawArray(zero, palette);
+        break;
+      case 1:
+        drawArray(one, palette);
+        break;
+      case 2:
+        drawArray(two, palette);
+        break;
+      case 3:
+        drawArray(three, palette);
+        break;
+      case 4:
+        drawArray(four, palette);
+        break;
+      case 5:
+        drawArray(five, palette);
+        break;
+      case 6:
+        drawArray(six, palette);
+        break;
+      case 7:
+        drawArray(seven, palette);
+        break;
+      case 8:
+        drawArray(eight, palette);
+        break;
+      case 9:
+        drawArray(nine, palette);
+        break;
+      case 10:
+        drawArray(ten, palette);
+        break;
+      default:
+        M5.dis.fillpix(0xffffff);
+        break;
+    }
+
+  }
+
+
+
+
+
+  /*##
+    //We use Mike Klepper's tilt threshold idea to help differentiate when the device is oriented in different directions (https://patriot-geek.blogspot.com/2020/05/atom-matrix-using-mpu6886-accelerometer.html)
+    if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ > tiltThreshold)
+      drawArray(circle, palette);
+    else if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ < -tiltThreshold)
+      drawArray(X, palette);
+    else if (abs(aX) < tiltThreshold && aY > tiltThreshold && abs(aZ) < tiltThreshold)
+      drawArray(upArrow, palette);
+    else if (abs(aX) < tiltThreshold && aY < -tiltThreshold && abs(aZ) < tiltThreshold)
+      drawArray(downArrow, palette);
+    else if (aX > tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold)
+      drawArray(leftArrow, palette);
+    else if (aX < -tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold)
+      drawArray(rightArrow, palette);
+    else
+      M5.dis.clear();  //If not clearly tilted to face the given directions the screen will be blank
+    ##*/
 
   M5.update();
 }
