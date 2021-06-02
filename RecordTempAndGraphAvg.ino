@@ -4,7 +4,14 @@
 unsigned long targetTime (0);
 float every5s [60], every1m [60], every1h [60], every1d [60], mAvg, hAvg, dAvg(999.9), temp(999.99);
 int sCtr (0), mCtr (0), hCtr (0);
+int white (0xffffff), red (0x00ff00), orange (0xa5ff00), yellow (0xffff00), green (0xff0000), blue (0x0000ff), purple (0x008080), black (0x000000);  //Helps reference colors codes by name
 
+//temperature ranges in C
+float veryCold (-20.0); // tempC < -20 is purple
+float cold (0); // -20 < tempC < -0 is blue
+float chill (20); // 0 < tempC < 20 is green
+float warmMax (40);   // 20 < tempC < 40 is yellow. And tempC>40 is extremly hot = red color
+int temporaryColor (white);
 
 void shiftFloatArray(float myArray[], float firstValue) {
   for (int ctr = 59; ctr > 0; ctr--)
@@ -17,6 +24,19 @@ float average(float array[60], int averageOf) {
   for (int ctr = 0; ctr < averageOf; ctr++)
     tempSum += array[ctr];
   return (tempSum / (float)averageOf);
+}
+
+int tempToColor(float tempC) {
+  if (tempC < veryCold)
+            return(purple);
+          else if (tempC < cold) 
+            return(blue);
+          else if (tempC < chill) 
+            return(green);
+          else if (tempC < warmMax) 
+            return(yellow);
+          else
+            return(red);
 }
 
 void setup() {
@@ -74,6 +94,19 @@ void loop() {
       Serial.printf("%.2f,  ", every1d [ctr]);
     Serial.println();
 
+    
+    
+    //Graphs average temp over last 25 hours on the screen
+    M5.dis.clear();  //Not sure yet but this might need to be debugged to prevent flickering...
+    for (int i = 0; i < 25; i++)
+    {
+      if (every1h[i] < 900) {
+        temporaryColor = tempToColor(every1h[i]);
+        M5.dis.drawpix(i, temporaryColor);
+      }
+    }
+    
+    
   } //End of what happens if it's time to record the temperature
   M5.update();
 }
