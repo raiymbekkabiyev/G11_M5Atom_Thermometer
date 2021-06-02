@@ -7,10 +7,10 @@ int sCtr (0), mCtr (0), hCtr (0);
 int white (0xffffff), red (0x00ff00), orange (0xa5ff00), yellow (0xffff00), green (0xff0000), blue (0x0000ff), purple (0x008080), black (0x000000);  //Helps reference colors codes by name
 
 //temperature ranges in C
-float veryCold (-20.0); // tempC < -20 is purple
-float cold (0); // -20 < tempC < -0 is blue
-float chill (20); // 0 < tempC < 20 is green
-float warmMax (40);   // 20 < tempC < 40 is yellow. And tempC>40 is extremly hot = red color
+float veryCold (40.0); // tempC < -20 is purple
+float cold (40.5); // -20 < tempC < -0 is blue
+float chill (41.0); // 0 < tempC < 20 is green
+float warmMax (41.5);   // 20 < tempC < 40 is yellow. And tempC>40 is extremly hot = red color
 int temporaryColor (white);
 
 void shiftFloatArray(float myArray[], float firstValue) {
@@ -100,8 +100,8 @@ void loop() {
     M5.dis.clear();  //Not sure yet but this might need to be debugged to prevent flickering...
     for (int i = 0; i < 25; i++)
     {
-      if (every1h[i] < 900) {
-        temporaryColor = tempToColor(every1h[i]);
+      if (every5s[i] < 900) {
+        temporaryColor = tempToColor(every5s[i]);
         M5.dis.drawpix(i, temporaryColor);
       }
     }
