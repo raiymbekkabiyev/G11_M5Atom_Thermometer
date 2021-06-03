@@ -27,6 +27,7 @@ float veryCold (-20.0);  // tempC < -20 is purple
 float cold (0);  // -20 < tempC < -0 is blue
 float chill (20);  // 0 < tempC < 20 is green
 float warmMax (40);  // 20 < tempC < 40 is yellow;  tempC > 40 is extremly hot = red color
+//...for graphing
 int temporaryColor (white);
 
 
@@ -260,38 +261,53 @@ void loop() {
 
 
     switch (menuMode) {  //Dictates what happens in each mode if active or not
+      
       case 1:
         if (!modeIsActive)
           drawArray(one, palette);
         else  //Show Active temperature + Units
           drawArray(one, paletteB);
         break;
+        
       case 2:
         if (!modeIsActive)
           drawArray(two, palette);
         else  //Show average of last 24 hours of temperature + Units
           drawArray(two, paletteB);
         break;
+        
       case 3:
         if (!modeIsActive)
           drawArray(three, palette);
         else  //Show color scale of temperature range + current temperature as color
           drawArray(three, paletteB);
         break;
+        
       case 4:
         if (!modeIsActive)
           drawArray(four, palette);
-        else  //Show graph of temperature across a predefined range
-          drawArray(four, paletteB);
+        else {  //Show graph of temperature across a predefined range (25 hours)
+          M5.dis.clear();
+          for (int i = 0; i < 25; i++)
+          {
+            if (every1h[i] < 900) {
+              temporaryColor = tempToColor(every1h[i]);
+              M5.dis.drawpix(i, temporaryColor);
+            }
+          }
+        }
         break;
+        
       case 5:
         if (!modeIsActive)
           drawArray(five, palette);
         else  //Change units
           drawArray(five, paletteB);
         break;
+        
       default:  //If in error state screen goes white
         M5.dis.fillpix(0xffffff);
+        
     }  //End of menu switch
 
   }  //End of isActive
