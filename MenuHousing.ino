@@ -1,16 +1,18 @@
+
 #include "M5Atom.h"
 
 int white (0xffffff), red (0x00ff00), orange (0xa5ff00), yellow (0xffff00), green (0xff0000), blue (0x0000ff), purple (0x008080), black (0x000000);  //Helps reference colors codes by name
 int palette[] = {black, white, red};  //Select color palette by putting in order (credit: Mike Klepper)
 int paletteB[] = {black, purple, red};
 
+bool boolUp = false, stayingRight = false, stayingLeft = false;
+float rightTiltTimeCheck, leftTiltTimeCheck;
+#define CHECKINTERVAL 500
+
 //Function that takes a 25 element matrix of image data and prints it on the display (credit: Mike Klepper)
 void drawArray(int shapeMatrix[], int colors[]) {
-  M5.dis.clear();  //Debug - not sure it's this line causing the issue but the lights flicker
-  for (int i = 0; i < 25; i++) {
-    if (colors[shapeMatrix[i]] != black)
-      M5.dis.drawpix(i, colors[shapeMatrix[i]]);
-  }
+  for (int i = 0; i < 25; i++)
+    M5.dis.drawpix(i, colors[shapeMatrix[i]]);
 }
 
 //Following is a series of arrays of pixel data which can be used to code an image on the display (inspired by Mike Klepper's code)
@@ -114,46 +116,53 @@ void loop() {
     isActive = false;
     M5.dis.clear();
     menuMode = 0;
-    modeIsActive = true;  //Debug - when I don't include this line turning the device on-off-on results in the last on starting in !active mode. Including the line means entering active mode often goes to active mode 1?? why?? 
+    modeIsActive = true;
   }
 
   if (isActive == true) {  //Dictates operation if on
     if (M5.Btn.wasPressed())
       modeIsActive = !modeIsActive;
 
-    if (tiltState == 0 && wasWasWas5 && !modeIsActive)  {  //Goes forward one mode if tilted right and back up //Debug - sensitive
-      menuMode++;
-      if (menuMode == 6)
-        menuMode = 1;
-    }
 
-    if (tiltState == 0 && wasWasWas6 && !modeIsActive)  {  //Goes back one mode if tilted left and back up  //Debug - sensitive
-      menuMode--;
-      if (menuMode == 0)
-        menuMode = 5;
-    }
-
-    if (tiltState == 5) {  //Sets wasWasWas5 variable to true if facing right for three loop iterations in a row
-      if (was5 == true) {
-        if (wasWas5 == true)
-          wasWasWas5 = true;
-        wasWas5 = true;
+    if (boolUp == true) {
+      if (tiltState == 5) {
+        rightTiltTimeCheck = millis() + CHECKINTERVAL;
+        stayingRight = true;
       }
-      was5 = true;
-    }
-    else
-      was5 = wasWas5 = wasWasWas5 = false;
-
-    if (tiltState == 6) {  //Sets wasWasWas6 variable to true if facing left for three loop iterations in a row
-      if (was6 == true) {
-        if (wasWas6 == true)
-          wasWasWas6 = true;
-        wasWas6 = true;
+      else if (tiltState == 6) {
+        leftTiltTimeCheck = millis() + CHECKINTERVAL;
+        stayingLeft = true;
       }
-      was6 = true;
     }
+
+    if (tiltState == 2 || tiltState == 0)
+      boolUp = true;
     else
-      was6 = wasWas6 = wasWasWas6 = false;
+      boolUp = false;
+
+    if (millis() < rightTiltTimeCheck && tiltState != 5)
+      stayingRight = false;
+
+    if (millis() > rightTiltTimeCheck && stayingRight == true) {
+      if (!modeIsActive) {
+        menuMode++;
+        if (menuMode == 6)
+          menuMode = 1;
+      }
+      stayingRight = false;
+    }
+
+    if (millis() < leftTiltTimeCheck && tiltState != 6)
+      stayingLeft = false;
+
+    if (millis() > leftTiltTimeCheck && stayingLeft == true) {
+      if (!modeIsActive) {
+        menuMode--;
+        if (menuMode == 0)
+          menuMode = 5;
+      }
+      stayingLeft = false;
+    }
 
 
     switch (menuMode) {  //Dictates what happens in each mode if active or not
@@ -195,5 +204,3 @@ void loop() {
 
   M5.update();
 }
-
-//debug - while clicking when on sometimes it just turns off. sometimes it is hard to turn back on.
