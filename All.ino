@@ -143,7 +143,22 @@ int tempToColor(float tempC) {
     return (red);
 }
 
-
+//Fill display with current temperature color  //##Can be simplified??
+void fillDisplay(int fillColor)
+{
+  for (int i = 5; i < 25; i++)
+  {
+    M5.dis.drawpix(i, fillColor);
+  }
+}
+//Fill top bar with color range
+void tempRangeBar() {
+  M5.dis.drawpix(0, purple);
+  M5.dis.drawpix(1, blue);
+  M5.dis.drawpix(2, green);
+  M5.dis.drawpix(3, yellow);
+  M5.dis.drawpix(4, red);
+}
 
 
 void setup() {
@@ -285,22 +300,41 @@ void loop() {
       case 1:
         if (!modeIsActive)
           drawArray(one, palette);
-        else  //Show Active temperature + Units
-          drawArray(one, paletteB);
+        else {  //Show Active temperature + Units
+          //          matrix.fillScreen(0);  //##Debug
+          //          matrix.setCursor(x, matrix.height());
+          //          matrix.printf("%.2f C \r\n", temp);
+          //          if (--x < -60) {
+          //            x = matrix.width();
+          //          }
+          //          matrix.show();
+          //          delay(scrollSpeed);
+        }
         break;
 
       case 2:
         if (!modeIsActive)
           drawArray(two, palette);
         else  //Show average of last 24 hours of temperature + Units
-          drawArray(two, paletteB);
+          drawArray(two, paletteB);  //##will put in after case 1 is debugged
         break;
 
       case 3:
         if (!modeIsActive)
           drawArray(three, palette);
-        else  //Show color scale of temperature range + current temperature as color
-          drawArray(three, paletteB);
+        else {  //Show color scale of temperature range + current temperature as color
+          tempRangeBar();
+          if (temp < veryCold)
+            fillDisplay(purple);
+          else if (temp < cold)
+            fillDisplay(blue);
+          else if (temp < chill)
+            fillDisplay(green);
+          else if (temp < warmMax)
+            fillDisplay(yellow);
+          else
+            fillDisplay(red);
+        }
         break;
 
       case 4:
