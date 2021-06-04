@@ -285,8 +285,16 @@ void loop() {
       case 1:
         if (!modeIsActive)
           drawArray(one, palette);
-        else  //Show Active temperature + Units
-          drawArray(one, paletteB);
+        else {  //Show Active temperature + Units
+          matrix.fillScreen(0);
+          matrix.setCursor(x, matrix.height());
+          matrix.printf("%.2f C \r\n", temp);
+          if (--x < -60) {
+            x = matrix.width();
+          }
+          matrix.show();
+          delay(scrollSpeed);
+        }
         break;
 
       case 2:
