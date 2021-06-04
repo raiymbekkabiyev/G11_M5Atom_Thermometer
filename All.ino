@@ -1,6 +1,14 @@
 //Libraries
 #include "M5Atom.h"
-
+//...for text scroll
+#include <FastLED.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_NeoMatrix.h>
+#include <Adafruit_NeoPixel.h>
+#include <Fonts/TomThumb.h>
+#include <iostream>
+#include <sstream>
+using namespace std;
 
 
 //Variables
@@ -29,47 +37,11 @@ float chill (20);  // 0 < tempC < 20 is green
 float warmMax (40);  // 20 < tempC < 40 is yellow;  tempC > 40 is extremly hot = red color
 //...for graphing
 int temporaryColor (white);
-
-
-
-
-//Functions
-
-//Function to shift values of a 60-element array over one and replace the first value (for recording temp)
-void shiftFloatArray(float myArray[], float firstValue) {
-  for (int ctr = 59; ctr > 0; ctr--)
-    myArray[ctr] = myArray[ctr - 1];
-  myArray[0] = firstValue;
-}
-
-//Function to to find average of certin number of elements within a 60-element (for recording temp)
-float average(float array[60], int averageOf) {
-  float tempSum (0);
-  for (int ctr = 0; ctr < averageOf; ctr++)
-    tempSum += array[ctr];
-  return (tempSum / (float)averageOf);
-}
-
-//Function that takes a 25 element matrix of image data and prints it on the display (for menu numbers) (credit: Mike Klepper)
-void drawArray(int shapeMatrix[], int colors[]) {
-  for (int i = 0; i < 25; i++)
-    M5.dis.drawpix(i, colors[shapeMatrix[i]]);
-}
-
-//Function that returns a color relative to the temperature (for color of current temp and graph)
-int tempToColor(float tempC) {
-  if (tempC < veryCold)
-    return (purple);
-  else if (tempC < cold)
-    return (blue);
-  else if (tempC < chill)
-    return (green);
-  else if (tempC < warmMax)
-    return (yellow);
-  else
-    return (red);
-}
-
+//...for test scroll
+#define PIN 27
+int scrollSpeed (125);
+Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(5, 5, PIN, NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_PROGRESSIVE, NEO_GRB + NEO_KHZ800);  //Constructor
+const uint16_t colors[] = { matrix.Color(255, 255, 255), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };  //First color is what displays
 
 
 
@@ -134,6 +106,46 @@ int bigF[25] = { 0, 1, 1, 1, 0,
 
 
 
+//Functions
+
+//Function to shift values of a 60-element array over one and replace the first value (for recording temp)
+void shiftFloatArray(float myArray[], float firstValue) {
+  for (int ctr = 59; ctr > 0; ctr--)
+    myArray[ctr] = myArray[ctr - 1];
+  myArray[0] = firstValue;
+}
+
+//Function to to find average of certin number of elements within a 60-element (for recording temp)
+float average(float array[60], int averageOf) {
+  float tempSum (0);
+  for (int ctr = 0; ctr < averageOf; ctr++)
+    tempSum += array[ctr];
+  return (tempSum / (float)averageOf);
+}
+
+//Function that takes a 25 element matrix of image data and prints it on the display (for menu numbers) (credit: Mike Klepper)
+void drawArray(int shapeMatrix[], int colors[]) {
+  for (int i = 0; i < 25; i++)
+    M5.dis.drawpix(i, colors[shapeMatrix[i]]);
+}
+
+//Function that returns a color relative to the temperature (for color of current temp and graph)
+int tempToColor(float tempC) {
+  if (tempC < veryCold)
+    return (purple);
+  else if (tempC < cold)
+    return (blue);
+  else if (tempC < chill)
+    return (green);
+  else if (tempC < warmMax)
+    return (yellow);
+  else
+    return (red);
+}
+
+
+
+
 void setup() {
   Serial.begin(115200);
   M5.begin(true, false, true);
@@ -142,9 +154,17 @@ void setup() {
 
   for (int ctr = 0; ctr < 60; ctr++)
     every5s[ctr] = every1m[ctr] = every1h[ctr] = every1d[ctr] = 999.99;  //Initialize temp storage
+
+  //For scroll text
+  matrix.begin();
+  matrix.setTextWrap(false);
+  matrix.setBrightness(20);
+  matrix.setTextColor(colors[0]);
+  matrix.setFont(&TomThumb);
 }
 
 
+int x  = matrix.height();  //For scroll text //##Can this be moved up??
 
 
 
@@ -261,28 +281,28 @@ void loop() {
 
 
     switch (menuMode) {  //Dictates what happens in each mode if active or not
-      
+
       case 1:
         if (!modeIsActive)
           drawArray(one, palette);
         else  //Show Active temperature + Units
           drawArray(one, paletteB);
         break;
-        
+
       case 2:
         if (!modeIsActive)
           drawArray(two, palette);
         else  //Show average of last 24 hours of temperature + Units
           drawArray(two, paletteB);
         break;
-        
+
       case 3:
         if (!modeIsActive)
           drawArray(three, palette);
         else  //Show color scale of temperature range + current temperature as color
           drawArray(three, paletteB);
         break;
-        
+
       case 4:
         if (!modeIsActive)
           drawArray(four, palette);
@@ -297,17 +317,17 @@ void loop() {
           }
         }
         break;
-        
+
       case 5:
         if (!modeIsActive)
           drawArray(five, palette);
         else  //Change units
           drawArray(five, paletteB);
         break;
-        
+
       default:  //If in error state screen goes white
         M5.dis.fillpix(0xffffff);
-        
+
     }  //End of menu switch
 
   }  //End of isActive
