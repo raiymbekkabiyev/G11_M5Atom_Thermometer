@@ -9,11 +9,10 @@
 #include <iostream>
 #include <sstream>
 using namespace std;
-
-
 #ifndef PSTR
 #define PSTR
 #endif
+
 
 
 //Variables
@@ -52,63 +51,48 @@ const uint16_t colors[] = { matrix.Color(255, 255, 255), matrix.Color(0, 255, 0)
 
 
 //Following is a series of arrays of pixel data which can be used to code an image on the display (inspired by Mike Klepper's code)
-int zero[25] = { 0, 0, 1, 0, 0,
-                 0, 1, 0, 1, 0,
-                 0, 1, 0, 1, 0,
-                 0, 1, 0, 1, 0,
-                 0, 0, 1, 0, 0,
-               };
-
 int one[25] = { 0, 0, 1, 0, 0,
                 0, 1, 1, 0, 0,
                 0, 0, 1, 0, 0,
                 0, 0, 1, 0, 0,
                 0, 1, 1, 1, 0,
               };
-
 int two[25] = { 0, 1, 1, 1, 0,
                 0, 0, 0, 1, 0,
                 0, 1, 1, 1, 0,
                 0, 1, 0, 0, 0,
                 0, 1, 1, 1, 0,
               };
-
 int three[25] = { 0, 1, 1, 1, 0,
                   0, 0, 0, 1, 0,
                   0, 1, 1, 1, 0,
                   0, 0, 0, 1, 0,
                   0, 1, 1, 1, 0,
                 };
-
 int four[25] = { 0, 1, 0, 1, 0,
                  0, 1, 0, 1, 0,
                  0, 1, 1, 1, 0,
                  0, 0, 0, 1, 0,
                  0, 0, 0, 1, 0,
                };
-
 int five[25] = { 0, 1, 1, 1, 0,
                  0, 1, 0, 0, 0,
                  0, 1, 1, 1, 0,
                  0, 0, 0, 1, 0,
                  0, 1, 1, 1, 0,
                };
-
 int bigC[25] = { 0, 0, 1, 1, 0,
                  0, 1, 0, 0, 0,
                  0, 1, 0, 0, 0,
                  0, 1, 0, 0, 0,
                  0, 0, 1, 1, 0,
                };
-
 int bigF[25] = { 0, 1, 1, 1, 0,
                  0, 1, 0, 0, 0,
                  0, 1, 1, 1, 0,
                  0, 1, 0, 0, 0,
                  0, 1, 0, 0, 0,
                };
-
-
 
 
 
@@ -159,6 +143,7 @@ void tempRangeBar() {
 }
 
 
+
 void setup() {
   Serial.begin(115200);
   M5.begin(true, false, true);
@@ -175,8 +160,6 @@ void setup() {
   matrix.setTextColor(colors[0]);
   matrix.setFont(&TomThumb);
 }
-
-
 int x  = matrix.height();  //For scroll text
 
 
@@ -217,7 +200,6 @@ void loop() {
 
 
   M5.IMU.getAccelData(&aX, &aY, &aZ);  //Gets acceleration data from the device
-
   //Determines which way the device is facing
   if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ > tiltThreshold)
     tiltState = 1;
@@ -249,63 +231,53 @@ void loop() {
   }
 
   if (isActive == true) {  //Dictates operation if on
-    if (M5.Btn.wasPressed())  //
+    if (M5.Btn.wasPressed())  //Pressing the button switches between main menu (shows the number of the mode you're about to enter) and being in a mode itself
       modeIsActive = !modeIsActive;
 
 
     if (boolUp == true) {
       if (tiltState == 5) {
-        rightTiltTimeCheck = millis() + CHECKINTERVAL;
+        rightTiltTimeCheck = millis() + CHECKINTERVAL;  //If you tilted the device up and are now tilting it right, set a timer for CHECKINTERVAL milliseconds
         stayingRight = true;
       }
       else if (tiltState == 6) {
-        leftTiltTimeCheck = millis() + CHECKINTERVAL;
+        leftTiltTimeCheck = millis() + CHECKINTERVAL;  //If you were tilted the device up and are now tilting it left, set a different timer for CHECKINTERVAL milliseconds
         stayingLeft = true;
       }
     }
 
-    if (tiltState == 2 || tiltState == 0)
+    if (tiltState == 2 || tiltState == 0)  //If you are facing up boolUP is true
       boolUp = true;
     else
       boolUp = false;
 
+    //If you tilt the device away before your right facing timer finished then you haven't faced it right long enough to be considered a right tilt
     if (millis() < rightTiltTimeCheck && tiltState != 5)
       stayingRight = false;
 
-    if (millis() > rightTiltTimeCheck && stayingRight == true) {
-      if (!modeIsActive) {
+    if (millis() > rightTiltTimeCheck && stayingRight == true) {  //If you tilted the device right for long enough...
+      if (!modeIsActive) {  //...and you are in the main menu, then go to the next mode in the menu...
         menuMode++;
         if (menuMode == 6)
           menuMode = 1;
       }
-      else if (menuMode == 5) {
-        if (unitsFlag == 0) {
-          unitsFlag = 1;
-        }
-        else if (unitsFlag == 1) {
-          unitsFlag = 0;
-        }
-      }
+      else if (menuMode == 5)  //...if you are not in the main menu but in mode 5...
+        unitsFlag = !unitsFlag;  //...change units
       stayingRight = false;
     }
 
+    //If you tilt the device away before your left facing timer finished then you haven't faced it left long enough to be considered a left tilt
     if (millis() < leftTiltTimeCheck && tiltState != 6)
       stayingLeft = false;
 
-    if (millis() > leftTiltTimeCheck && stayingLeft == true) {
-      if (!modeIsActive) {
+    if (millis() > leftTiltTimeCheck && stayingLeft == true) {  //If you tilted the device left for long enough...
+      if (!modeIsActive) {  //...and you are in the main menu, then go to the pervious mode in the menu...
         menuMode--;
         if (menuMode == 0)
           menuMode = 5;
       }
-      else if (menuMode == 5) {
-        if (unitsFlag == 0) {
-          unitsFlag = 1;
-        }
-        else if (unitsFlag == 1) {
-          unitsFlag = 0;
-        }
-      }
+      else if (menuMode == 5)  //...if you are not in the main menu but in mode 5...
+        unitsFlag = !unitsFlag;  //...change units
       stayingLeft = false;
     }
 
