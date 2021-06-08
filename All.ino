@@ -16,19 +16,19 @@ using namespace std;
 
 
 //Variables
-int white (0xffffff), red (0x00ff00), orange (0xa5ff00), yellow (0xffff00), green (0xff0000), blue (0x0000ff), purple (0x008080), black (0x000000);  //Helps reference colors codes by name
+int white (0xffffff), red (0xff0000), orange (0xffa500), yellow (0xffff00), green (0x00ff00), blue (0x0000ff), purple (0x800080), black (0x000000);  //Helps reference colors codes by name
 int palette[] = {black, white, red};  //Select color palette by putting in order (credit: Mike Klepper)
 int paletteB[] = {black, purple, red};
 //...for menu
-bool boolUp = false, stayingRight = false, stayingLeft = false;
-float rightTiltTimeCheck, leftTiltTimeCheck;
+bool boolUp = false, stayingRight = false, stayingLeft = false, boolNotDown = false, stayingDown = false;
+float rightTiltTimeCheck, leftTiltTimeCheck, downTiltTimeCheck;
 float tiltThreshold (.5);  //We tested to find this value which defines the angles at which the device must be tilted at to be considered as facing certain directions
 float aX, aY, aZ;  //Acceleration data
 int tiltState (0);  //0=error, 1=down, 2=up, 3=facing you, 4=facing away from you, 5=right, 6=left
 int unitsFlag (0);  //Units of temperature displayed; 0=C, 1=F
 int menuMode (0);  //0=off, 1=show temp and units, 2=show 24hr avg and units, 3=show color scale and current temp color, 4=show temp graph over predefined range, 5=change units
 bool isActive(false), modeIsActive(true);
-#define CHECKINTERVAL 500  //How long you have to tilt the device to change modes (milliseconds)
+#define CHECKINTERVAL 300  //How long you have to tilt the device to change modes (milliseconds)
 //...for recording temp
 #define INTERVAL 5000; //How often to record temperature (milliseconds)
 unsigned long targetTime (0);
@@ -44,9 +44,8 @@ int temporaryColor (white);
 //...for test scroll
 #define PIN 27
 int scrollSpeed (125);
-float targetTimeScroll (0);  //##testing
+float targetTimeScroll1 (0), targetTimeScroll2 (0);
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(5, 5, PIN, NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_PROGRESSIVE, NEO_GRB + NEO_KHZ800);  //Constructor
-const uint16_t colors[] = { matrix.Color(255, 255, 255), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };  //First color is what displays
 
 
 
@@ -113,10 +112,10 @@ float average(float array[60], int averageOf) {
   return (tempSum / (float)averageOf);
 }
 
-//Function that takes a 25 element matrix of image data and prints it on the display (for menu numbers) (credit: Mike Klepper)
-void drawArray(int shapeMatrix[], int colors[]) {
+//Function that takes a 25 element matrix of image data and prints it on the matrix (for menu numbers) (inspiration: Mike Klepper)
+void drawMatrix(int shapeMatrix[], int colors[]) {
   for (int i = 0; i < 25; i++)
-    M5.dis.drawpix(i, colors[shapeMatrix[i]]);
+    matrix.setPixelColor(i, colors[shapeMatrix[i]]);
 }
 
 //Function that returns a color relative to the temperature (for color of current temp and graph)
@@ -135,11 +134,11 @@ int tempToColor(float tempC) {
 
 //Fill top bar with color range
 void tempRangeBar() {
-  M5.dis.drawpix(0, purple);
-  M5.dis.drawpix(1, blue);
-  M5.dis.drawpix(2, green);
-  M5.dis.drawpix(3, yellow);
-  M5.dis.drawpix(4, red);
+  matrix.setPixelColor(0, purple);
+  matrix.setPixelColor(1, blue);
+  matrix.setPixelColor(2, green);
+  matrix.setPixelColor(3, yellow);
+  matrix.setPixelColor(4, red);
 }
 
 
@@ -148,7 +147,7 @@ void setup() {
   Serial.begin(115200);
   M5.begin(true, false, true);
   M5.IMU.Init();  //Starts up the hardware in the device which detects acceleration, gyration, and temperature
-  M5.dis.clear();
+  matrix.fill();
 
   for (int ctr = 0; ctr < 60; ctr++)
     every5s[ctr] = every1m[ctr] = every1h[ctr] = every1d[ctr] = 999.99;  //Initialize temp storage
@@ -157,7 +156,7 @@ void setup() {
   matrix.begin();
   matrix.setTextWrap(false);
   matrix.setBrightness(20);
-  matrix.setTextColor(colors[0]);
+  matrix.setTextColor(palette[1]);
   matrix.setFont(&TomThumb);
 }
 int x  = matrix.height();  //For scroll text
@@ -222,19 +221,13 @@ void loop() {
     if (menuMode == 0)
       menuMode = 1;
   }
-
-  if (tiltState == 1) {  //Turns screen off if faced down
-    isActive = false;
-    M5.dis.clear();
-    menuMode = 0;
-    modeIsActive = true;
-  }
+  
 
   if (isActive == true) {  //Dictates operation if on
     if (M5.Btn.wasPressed())  //Pressing the button switches between main menu (shows the number of the mode you're about to enter) and being in a mode itself
       modeIsActive = !modeIsActive;
 
-
+    //---------------------------------------------code from here down is used to check if tilted left/right
     if (boolUp == true) {
       if (tiltState == 5) {
         rightTiltTimeCheck = millis() + CHECKINTERVAL;  //If you tilted the device up and are now tilting it right, set a timer for CHECKINTERVAL milliseconds
@@ -280,59 +273,109 @@ void loop() {
         unitsFlag = !unitsFlag;  //...change units
       stayingLeft = false;
     }
+    //---------------------------------------------code from here up is used to check if tilted left/right
+    //---------------------------------------------code from here down is used to turn screen off if faced down long enough
+    if (boolNotDown == true) {
+      if (tiltState == 1) {
+        downTiltTimeCheck = millis() + CHECKINTERVAL;  //If you tilted the device down just now, set a timer for CHECKINTERVAL milliseconds
+        stayingDown = true;
+      }
+    }
+
+    if (tiltState != 1)  //If you are not facing down boolNotDown is true
+      boolNotDown = true;
+    else
+      boolNotDown = false;
+
+    if (millis() < downTiltTimeCheck && tiltState != 1)
+      stayingDown = false;
+
+    if (millis() > downTiltTimeCheck && stayingDown == true) {  //If you tilted the device down for long enough...
+      isActive = false;
+      matrix.fill();
+      menuMode = 0;
+      modeIsActive = true;
+      stayingDown = false;
+    }
+    //---------------------------------------------code from here up is used to check if tilted down
 
 
     switch (menuMode) {  //Dictates what happens in each mode if active or not
 
       case 1:
         if (!modeIsActive) {
-          drawArray(one, palette);
+          drawMatrix(one, palette);
         }
         else {  //Show Active temperature + Units
-          drawArray(one, paletteB);
-
-          if ( millis() > targetTimeScroll) {
+          if ( millis() > targetTimeScroll1) {
             matrix.fillScreen(0);
             matrix.setCursor(x, matrix.height());
             if (unitsFlag == 0)
-              matrix.printf("%.2f C \r\n", temp);
+              matrix.printf("%.1f C \r\n", temp);
             else
-              matrix.printf("%.2f F \r\n", tempF);
+              matrix.printf("%.1f F \r\n", tempF);
             if (--x < -60) {
               x = matrix.width();
             }
-            //                      matrix.show();  //##Debug
-            targetTimeScroll += scrollSpeed;  //Set the new target time to one interval away from the last target time
+            targetTimeScroll1 += scrollSpeed;  //Set the new target time to one interval away from the last target time
           }
         }
         break;
 
       case 2:
         if (!modeIsActive)
-          drawArray(two, palette);
-        else  //Show average of last 24 hours of temperature + Units
-          drawArray(two, paletteB);  //##will put in after case 1 is debugged
+          drawMatrix(two, palette);
+        else {  //Show average of last 24 hours of temperature + Units
+          if ( millis() > targetTimeScroll2) {
+            matrix.fillScreen(0);
+            matrix.setCursor(x, matrix.height());
+
+            if (every1d[0] < 900) {
+              if (unitsFlag == 0)
+                matrix.printf("%.1f C \r\n", every1d[0]);
+              else
+                matrix.printf("%.1f F \r\n", (every1d[0] * 9.0 / 5.0 + 32));
+            }
+            else
+              matrix.print("Error");
+
+            if (--x < -60) {
+              x = matrix.width();
+            }
+            targetTimeScroll2 += scrollSpeed;  //Set the new target time to one interval away from the last target time
+          }
+        }
         break;
 
       case 3:
         if (!modeIsActive)
-          drawArray(three, palette);
+          drawMatrix(three, palette);
         else {  //Show color scale of temperature range + current temperature as color
-          M5.dis.fillpix(tempToColor(temp));
+          matrix.fill(tempToColor(temp));
           tempRangeBar();
         }
         break;
 
       case 4:
         if (!modeIsActive)
-          drawArray(four, palette);
-        else {  //Show graph of temperature across a predefined range (25 hours)
-          M5.dis.clear();
+          drawMatrix(four, palette);
+        /*        else {  //Show graph of temperature across a predefined range (25 hours)
+                  matrix.fill();
+                  for (int i = 0; i < 25; i++)
+                  {
+                    if (every1h[i] < 900) {
+                      temporaryColor = tempToColor(every1h[i]);
+                      matrix.setPixelColor(i, temporaryColor);
+                    }
+                  }
+                }*/
+        else {  //Show graph of temperature across a predefined range (125 seconds)
+          matrix.fill();
           for (int i = 0; i < 25; i++)
           {
-            if (every1h[i] < 900) {
-              temporaryColor = tempToColor(every1h[i]);
-              M5.dis.drawpix(i, temporaryColor);
+            if (every5s[i] < 900) {
+              temporaryColor = tempToColor(every5s[i]);
+              matrix.setPixelColor(i, temporaryColor);
             }
           }
         }
@@ -340,24 +383,26 @@ void loop() {
 
       case 5:
         if (!modeIsActive)
-          drawArray(five, palette);
+          drawMatrix(five, palette);
         else {  //Change units
           if (unitsFlag == 0) {
-            drawArray(bigC, paletteB);
+            drawMatrix(bigC, paletteB);
           }
           else if (unitsFlag == 1) {
-            drawArray(bigF, paletteB);
+            drawMatrix(bigF, paletteB);
           }
         }
         break;
 
       default:  //If in error state screen goes red
-        M5.dis.fillpix(0x00ff00);
+        matrix.fill(0xff0000);
 
     }  //End of menu switch
 
   }  //End of isActive
+  else
+    matrix.fill();
 
-
+  matrix.show();
   M5.update();
 }  //End of loop
