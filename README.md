@@ -46,29 +46,5 @@ Inspired by Mike Klepper's post on "ATOM Matrix: Using the MPU6886 Accelerometer
       tiltState = 0;}
 
 
-<h2> Brief explanation of how every mode works </h2> 
-<h3>  Show Active temperature + Units mode </h3> 
-<p> 
 
-</p>
-<h3>  Show average of last 24 hours of temperature + Units </h3> 
-<p> 
-
-</p>
-<h3>  Show color scale of temperature range + current temperature as color </h3> 
-<p> 
-
-</p>
-<h3>  Show graph of temperature across a predefined range </h3> 
-<p> 
-
-</p>
-<h3>  Show graph of temperature across a predefined range </h3> 
-<p> 
-
-</p>
-<h3>  Change units  </h3> 
-<p> 
-
-</p>
 
