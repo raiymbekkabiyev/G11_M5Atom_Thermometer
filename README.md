@@ -27,6 +27,7 @@ Since most of the fonts in Adafruit library are designed for a bigger display, i
 <h2> How to use Accelerometer to identify orientation of M5Atom </h2> 
 <p> 
 Inspired by Mike Klepper's post on "ATOM Matrix: Using the MPU6886 Accelerometer" (https://patriot-geek.blogspot.com/2020/05/atom-matrix-using-mpu6886-accelerometer.html), we used Acceleromter to use orientation of the device as a trigger to switch to a corresponding mode. By running our own experiments with M5Atom, we modified Mike's approach and found a threshold value of 0.5 that can be used for every axis. Depending on how the devise is oriented, we update tiltState variable. 
+ </p>
     M5.IMU.getAccelData(&aX, &aY, &aZ);  //Gets acceleration data from the device
    //Determines which way the device is facing
    if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ > tiltThreshold)
@@ -43,7 +44,7 @@ Inspired by Mike Klepper's post on "ATOM Matrix: Using the MPU6886 Accelerometer
      tiltState = 6;
    else
      tiltState = 0;
-</p>
+
 <h2> Brief explanation of how every mode works </h2> 
 <h3>  Show Active temperature + Units mode </h3> 
 <p> 
