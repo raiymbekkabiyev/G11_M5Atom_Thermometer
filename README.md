@@ -29,22 +29,22 @@ Since most of the fonts in Adafruit library are designed for a bigger display, i
 Inspired by Mike Klepper's post on "ATOM Matrix: Using the MPU6886 Accelerometer" (https://patriot-geek.blogspot.com/2020/05/atom-matrix-using-mpu6886-accelerometer.html), we used Acceleromter to use orientation of the device as a trigger to switch to a corresponding mode. By running our own experiments with M5Atom, we modified Mike's approach and found a threshold value of 0.5 that can be used for every axis. Depending on how the devise is oriented, we update tiltState variable. 
  </p>
  
-''' 
+ '''
     M5.IMU.getAccelData(&aX, &aY, &aZ);  
-   if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ > tiltThreshold)
-     tiltState = 1;
-   else if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ < -tiltThreshold)
-     tiltState = 2;
-   else if (abs(aX) < tiltThreshold && aY > tiltThreshold && abs(aZ) < tiltThreshold)
-     tiltState = 3;
-   else if (abs(aX) < tiltThreshold && aY < -tiltThreshold && abs(aZ) < tiltThreshold)
-     tiltState = 4;
-   else if (aX > tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold)
-     tiltState = 5;
-   else if (aX < -tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold)
-     tiltState = 6;
-   else
-     tiltState = 0;
+   if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ > tiltThreshold){
+     tiltState = 1;}
+   else if (abs(aX) < tiltThreshold && abs(aY) < tiltThreshold && aZ < -tiltThreshold){
+     tiltState = 2;}
+   else if (abs(aX) < tiltThreshold && aY > tiltThreshold && abs(aZ) < tiltThreshold){
+     tiltState = 3;}
+   else if (abs(aX) < tiltThreshold && aY < -tiltThreshold && abs(aZ) < tiltThreshold){
+     tiltState = 4;}
+   else if (aX > tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold){
+     tiltState = 5;}
+   else if (aX < -tiltThreshold && abs(aY) < tiltThreshold && abs(aZ) < tiltThreshold){
+     tiltState = 6;}
+   else{
+     tiltState = 0;}
 '''
 
 <h2> Brief explanation of how every mode works </h2> 
