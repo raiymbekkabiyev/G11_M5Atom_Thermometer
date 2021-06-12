@@ -25,3 +25,32 @@ In order to scroll text on the M5Atom, one must add the following three librarie
 Since most of the fonts in Adafruit library are designed for a bigger display, it is recommended to incldude <strong> Fonts/TomThumb.h </strong> font.
 </p> 
 <h2> How to use Accelerometer to identify orientation of M5Atom </h2> 
+<p> 
+ 
+</p>
+<h2> Brief explanation of how every mode works </h2> 
+<h3>  Show Active temperature + Units mode </h3> 
+<p> 
+
+</p>
+<h3>  Show average of last 24 hours of temperature + Units </h3> 
+<p> 
+
+</p>
+<h3>  Show color scale of temperature range + current temperature as color </h3> 
+<p> 
+
+</p>
+<h3>  Show graph of temperature across a predefined range </h3> 
+<p> 
+
+</p>
+<h3>  Show graph of temperature across a predefined range </h3> 
+<p> 
+
+</p>
+<h3>  Change units  </h3> 
+<p> 
+
+</p>
+
