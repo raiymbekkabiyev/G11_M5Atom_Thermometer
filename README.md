@@ -14,4 +14,10 @@ To enter the Active mode, user has to place the device facing up (to the ceiling
 </p>
 <h2> How do we scroll text to display temperature or why you need <strong> Adafruit </strong> library </h2> 
 <p> Firsly, we want to give credits to Mike Klepper for making an incredible article on Advanced Display Usage, where we learnt how to use <strong> Adafruit </strong> library. Link to Mike's post on ATOM Matrix: Advanced Display Usage: https://patriot-geek.blogspot.com/2020/05/atom-matrix-advanced-display-usage.html
+In order to scroll text on the M5Atom, one must add the following three libraries: 
+<ol>
+<li> #include <Adafruit_GFX.h> </li>
+<li> #include <Adafruit_NeoMatrix.h> </li>
+<li> #include <Adafruit_NeoPixel.h> </li>
+<ol>
 </p> 
