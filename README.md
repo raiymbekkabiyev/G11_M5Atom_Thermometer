@@ -22,4 +22,6 @@ In order to scroll text on the M5Atom, one must add the following three librarie
 <li> Adafruit_NeoPixel.h </li>  
 </strong>
 <ol>
+Since most of the fonts in Adafruit library are designed for a bigger display, it is recommended to incldude <strong> Fonts/TomThumb.h </strong> font.
 </p> 
+<h2> How to use Accelerometer to identify orientation of M5Atom </h2> 
