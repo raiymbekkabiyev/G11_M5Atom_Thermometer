@@ -13,4 +13,5 @@ The devise is constantly reading temperature data using IMU sensor. That allows 
 To enter the Active mode, user has to place the device facing up (to the ceiling) and press the button. This would also activate the first mode - show active temperature. Temperature is shown in Celcius by default (can be changed to Fahrenheit in mode 5). Now from Active mode, user can enter other modes by tilting the devise left or right. 
 </p>
 <h2> How do we scroll text to display temperature or why you need <strong> Adafruit </strong> library </h2> 
-<p> </p> 
+<p> Firsly, we want to give credits to Mike Klepper for making an incredible article on Advanced Display Usage, where we learnt how to use <strong> Adafruit </strong> library. Link to Mike's post on ATOM Matrix: Advanced Display Usage: https://patriot-geek.blogspot.com/2020/05/atom-matrix-advanced-display-usage.html
+</p> 
